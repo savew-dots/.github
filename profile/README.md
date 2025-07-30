@@ -1,7 +1,13 @@
-![banner](https://raw.githubusercontent.com/saveside/dots/refs/heads/main/assets/Banner.png)
+![banner](https://raw.githubusercontent.com/savew-dots/.github/refs/heads/main/assets/Banner.png)
+
 This is my personal organization for my dotfiles. Based on [Jomo's Dotfiles](https://github.com/xeome/dots). There is almost no difference between them. The changes made compared to Jomo’s Dotfiles are largely tweaks to my own system (font size, environment variables, etc.).
 
+---
+
 # Dependencies
+
+The installation script will automatically install these dependencies via your AUR helper (`yay` or `paru`).  
+You do not need to install them manually unless you prefer to.
 
 | Type            | Package(s)                                           |
 | --------------- | ---------------------------------------------------- |
@@ -16,9 +22,26 @@ This is my personal organization for my dotfiles. Based on [Jomo's Dotfiles](htt
 | Fonts           | `ttf-iosevka-nerd ttf-jetbrains-mono monaspace Neon` |
 | Editor          | `neovim`                                             |
 
+---
+
 # Installation
 
-Coming Soon
+⚠️ *This script is intended for Arch and Arch‑based distributions only.*
+
+You can set up these dotfiles with a single script.  
+The script supports three installation modes:
+
+1. **Save's Dots** (default) – full installation of my configs  
+2. **Jomo's Dots** – uses [Jomo’s dotfiles](https://github.com/xeome/dots) via `chezmoi`  
+3. **Partial Installation** – interactively select which configs to install  
+
+> ⚠️ **Note:** *Jomo’s Dots do **NOT** support partial installation.*  
+
+## Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/savew-dots/.github/main/install.sh | bash
+```
 
 # Keyboard Shortcuts
 
@@ -34,4 +57,4 @@ Coming Soon
 
 # Screenshots
 
-![hyprland](assets/desktop.png)
+![hyprland](https://raw.githubusercontent.com/savew-dots/.github/refs/heads/main/assets/desktop.png)
