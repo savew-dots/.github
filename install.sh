@@ -215,7 +215,7 @@ extract_fonts() {
 }
 
 # ── Installing System ───────────────────────────────────────────────
-main() {
+main_install() {
   repo_check
   check_distro
   aur_helper
@@ -226,4 +226,14 @@ main() {
   echo "✅ All done! jomolayana..."
 }
 
-main
+subconfig_install() {
+  repo_check
+  install
+  echo "✅ All done! jomolayana..."
+}
+
+if [[ "$choice" == "3" ]]; then
+  subconfig_install
+else
+  main
+fi
