@@ -27,6 +27,7 @@ You do not need to install them manually unless you prefer to.
 # Installation
 
 ⚠️ *This script is intended for Arch and Arch‑based distributions only.*
+> *Partial installation can be used with another distributions but configs not tested in other distributions.*  
 
 You can set up these dotfiles with a single script.  
 The script supports three installation modes:
@@ -40,7 +41,7 @@ The script supports three installation modes:
 ## Quick Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/savew-dots/.github/main/install.sh | bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/savew-dots/.github/main/install.sh)"
 ```
 
 # Keyboard Shortcuts
