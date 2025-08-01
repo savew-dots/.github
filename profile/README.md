@@ -26,7 +26,8 @@ You do not need to install them manually unless you prefer to.
 
 # Installation
 
-⚠️ *This script is intended for Arch and Arch‑based distributions only.*
+> [!WARNING]  
+> *This script is intended for Arch and Arch‑based distributions only.*
 > *Partial installation can be used with another distributions but configs **NOT** tested in other distributions.*  
 
 You can set up these dotfiles with a single script.  
@@ -36,7 +37,9 @@ The script supports three installation modes:
 2. **Jomo's Dots** – uses [Jomo’s dotfiles](https://github.com/xeome/dots) via `chezmoi`  
 3. **Partial Installation** – interactively select which configs to install  
 
-> ⚠️ **Note:** *Jomo’s Dots do **NOT** support partial installation.*  
+
+> [!NOTE]
+> *Jomo’s Dots do **NOT** support partial installation.*  
 
 ## Quick Install
 
