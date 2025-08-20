@@ -39,7 +39,6 @@ esac
 
 # ── Check if GitHub repo is reachable ──────────────────
 repo_check() {
-  echo
   gum spin --spinner dot --title "Checking GitHub repo..." -- sleep 3
   gh_status=$(curl -o /dev/null -s -w "%{http_code}" "$gh_repo_url")
   if [ "$gh_status" -eq 200 ]; then
