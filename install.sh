@@ -1,65 +1,56 @@
 #!/usr/bin/env bash
 set -e
 
-echo "┌────────────────────┐"
-echo "│  Save's Dots Setup │"
-echo "└────────────────────┘"
-echo
+if command -v gum &> /dev/null; then
+  echo "gum detected."
+else
+  echo "gum not detected, installing it..."
+  sudo pacman -S gum
+fi
+
+clear
+
+gum style \
+        --foreground 147 --border-foreground 153 --border double \
+        --align center --width 50 --margin "1 2" --padding "2 4" \
+        "Welcome to" "Save's Dotfiles"
 
 # ── Choose dotfiles repo ───────────────────────────────
-echo "Choices:"
-echo "1) Save's Dots (default)"
-echo "2) Jomo's Dots (for testing and other reasons)"
-echo "3) Partial Installation (choose which configs to install)"
-read -rp "Enter choice [1/2/3]: " choice
+choice=$(gum choose --header "Select one of the following options:" \
+  "Save's Dots (default)" \
+  "Jomo's Dots (for testing and other reasons)" \
+  "Partial Installation (choose which configs to install)")
 
 case "$choice" in
-  1|"")
-    gh_repo_url="https://github.com/savew-dots/dots"
+  "Save's Dots (default)"|"")
+    gh_repo_url="https://github.com/savew-dots/.github"
     ;;
-  2)
+  "Jomo's Dots (for testing and other reasons)")
     gh_repo_url="https://github.com/xeome/dots"
     ;;
-  3)
+  "Partial Installation (choose which configs to install)")
     gh_repo_url="https://github.com/savew-dots/.github"
     ;;
   *)
-    echo "❌ Invalid choice. Defaulting to Save's Dots."
+    gum log --structured --level error "Unexpected choice, continuing with $choice"
     gh_repo_url="https://github.com/savew-dots/.github"
-    choice=1
     ;;
 esac
 
 # ── Check if GitHub repo is reachable ──────────────────
 repo_check() {
   echo
-  echo "🌐 Checking GitHub repo URL..."
+  gum spin --spinner dot --title "Checking GitHub repo..." -- sleep 3
   gh_status=$(curl -o /dev/null -s -w "%{http_code}" "$gh_repo_url")
   if [ "$gh_status" -eq 200 ]; then
-    echo "✅ GitHub repo is reachable."
+    gum log --structured --level info "GitHub repo reachable!"
   else
-    echo -e "❌ GitHub repo is NOT reachable :( \nExiting."
+    gum log --structured --level error "GitHub repo not found :("
     exit 1
   fi
 }
 
 # ── Some important variables ──────────────────
-CONFIGS=(
-  "alacritty"
-  "gtklock"
-  "hypr"
-  "k9s"
-  "matugen"
-  "mpv"
-  "rofi"
-  "swayosd"
-  "wallpapers"
-  "waybar"
-  "wtf"
-  "zathura"
-  "zsh"
-)
-
 INSTALL_DIR="$HOME/.config"
 
 # ── Check if system is Arch-based ──────────────────────
@@ -68,9 +59,9 @@ check_distro() {
   id_like=$(grep '^ID_LIKE=' /etc/os-release | head -n1 | sed 's/^ID_LIKE=//; s/"//g')
 
   if [[ "$id" == "arch" ]] || [[ "$id_like" == *arch* ]]; then
-    echo "✅ Distribution is Arch or Arch-based. Continuing setup..."
+    gum log --structured --level info "Distribution is Arch or Arch-based. Continuing setup..."
   else
-    echo "❌ Distribution is not Arch or Arch-based. This script is intended for Arch-based systems only."
+    gum log --structured --level error "Distribution is not Arch or Arch-based. This script is intended for Arch-based systems only :( "
     exit 1
   fi
 }
@@ -79,123 +70,119 @@ check_distro() {
 aur_helper() {
   echo "🔍 Checking for AUR helper (yay or paru)..."
   if command -v yay &> /dev/null; then
-    echo "✅ AUR helper 'yay' detected."
+    gum log --structured --level info "AUR Helper 'yay' found."
     aur_helper="yay"
   elif command -v paru &> /dev/null; then
-    echo "✅ AUR helper 'paru' detected."
+    gum log --structured --level info "AUR Helper 'paru' found."
     aur_helper="paru"
   else
-    echo "⚠️  No AUR helper found on the system."
-    echo "📦 Installing prerequisites: base-devel and git..."
+    gum log --structured --level error "No AUR helper found on the system!"
+    gum log --structured --level debug "Installing prerequisites: base-devel and git..."
     sudo pacman -S --needed base-devel git
 
-    echo "⬇️  Cloning 'yay' from the AUR..."
+    gum log --structured --level info "Cloning 'yay' from the AUR..."
     cd "$(mktemp -d)" || exit
     git clone https://aur.archlinux.org/yay.git
     cd yay || exit
 
-    echo "⚙️  Building and installing 'yay'..."
+    gum log --structured --level info "Building and installing 'yay'..."
     makepkg -si
 
     aur_helper="yay"
-    echo "✅ AUR helper 'yay' installed successfully."
+    gum log --structured --level info "AUR helper 'yay' installed successfully."
   fi
 }
 
 # ── Install packages from GitHub list ──────────────────
 install_pkgs() {
-  echo "⬇️  Downloading package list from GitHub..."
+  gum log --structured --level info "Downloading package list from GitHub..."
   cd "$(mktemp -d)" || exit
   wget https://raw.githubusercontent.com/savew-dots/.github/refs/heads/main/assets/pkgs
 
-  echo "📦 Installing packages using $aur_helper..."
+  gum log --structured --level info "Installing packages using $aur_helper..."
   $aur_helper -S --needed - < pkgs
 }
 
 # ── Install dots ──────────────────
 install() {
-  if [[ "$choice" == "1" || -z "$choice" ]]; then
+  if [[ "$choice" == "Save's Dots (default)" || -z "$choice" ]]; then
     for config in "${CONFIGS[@]}"; do
-      echo "⚙️ Installing $config..."
+      gum log --structured --level info "Installing $config..."
 
       repo_url="https://github.com/savew-dots/$config"
       target="$INSTALL_DIR/$config"
 
       if [[ ! -d "$target/.git" ]]; then
-        echo "📥 Cloning $repo_url → $target"
+        gum log --structured --level info "Cloning $repo_url → $target"
         rm -rf "$target"
         git clone "$repo_url" "$target"
       else
-        echo "↻ Updating $config..."
+        gum log --structured --level info "Updating $config..."
         git -C "$target" pull --ff-only
       fi
     done
-  elif [[ "$choice" == "2" ]]; then
-    echo "⚙️ Installing Jomo's dots..."
-    echo "🎯 Setting up dotfiles with chezmoi..."
+  elif [[ "$choice" == "Jomo's Dots (for testing and other reasons)" ]]; then
+    gum log --structured --level info "Installing Jomo's dots..."
+    gum log --structured --level info "Setting up dotfiles with chezmoi..."
     chezmoi init "$gh_repo_url"
     chezmoi apply -v
-  elif [[ "$choice" == "3" ]]; then
-    echo "⚙️ Partial installation mode"
-    echo "Available configs (type numbers separated by spaces, or 'q' to quit):"
-    for i in "${!CONFIGS[@]}"; do
-      printf "%2d) %s\n" $((i+1)) "${CONFIGS[$i]}"
-    done
+  elif [[ "$choice" == "Partial Installation (choose which configs to install)" ]]; then
+    gum log --structured --level info "Partial installation mode ready!"
+    config=$(gum choose --header "Available configs:" \
+      "alacritty" \
+      "gtklock" \
+      "hypr" \
+      "k9s" \
+      "matugen" \
+      "mpv" \
+      "rofi" \
+      "swayosd" \
+      "wallpapers" \
+      "waybar" \
+      "zathura" \
+      "zsh")
+    
+    if [[ -n "$config" ]]; then
+      repo_url="https://github.com/savew-dots/$config"
+      target="$INSTALL_DIR/$config"
 
-    read -rp "Select configs to install: " selections
-
-    if [[ "$selections" == "q" ]]; then
-      echo "👋 Exiting partial installation."
-      exit 0
-    fi
-
-    for sel in $selections; do
-      index=$((sel-1))
-      config="${CONFIGS[$index]}"
-
-      if [[ -n "$config" ]]; then
-        repo_url="https://github.com/savew-dots/$config"
-        target="$INSTALL_DIR/$config"
-
-        echo "⚙️ Installing $config..."
-        if [[ ! -d "$target/.git" ]]; then
-          echo "📥 Cloning $repo_url → $target"
-          rm -rf "$target"
-          git clone "$repo_url" "$target"
-        else
-          echo "↻ Updating $config..."
-          git -C "$target" pull --ff-only
-        fi
+      gum log --structured --level info "Installing $config..."
+      if [[ ! -d "$target/.git" ]]; then
+        gum log --structured --level info "Cloning $repo_url → $target"
+        rm -rf "$target"
+        git clone "$repo_url" "$target"
       else
-        echo "❌ Invalid selection: $sel"
+        gum log --structured --level info "Updating $config..."
+        git -C "$target" pull --ff-only
       fi
-    done
+    else
+      gum log --structured --level error "Invalid selection: $config"
+    fi
   else
-    echo "❌ Invalid choice. Please select 1, 2, or 3."
     exit 1
   fi
 }
 
 # ── Download fonts ─────────────────────────
 install_fonts() {
-  echo "🔤 Downloading fonts..."
+  gum log --structured --level info "Downloading fonts..."
 
   sf_pro_url="https://files.savew.dev/sf-pro.zip"
   sf_pro_fallback="https://files.xeome.dev/sf-pro.zip"
 
-  echo "🌐 Checking SF Pro font URL..."
+  gum spin --spinner dot --title "Checking SF Pro font URL..." -- sleep 3
   status=$(wget --server-response --spider "$sf_pro_url" 2>&1 | awk '/HTTP\// {print $2; exit}')
   if [ "$status" -eq 200 ]; then
-    echo "✅ SF Pro font URL is reachable. Downloading..."
+    gum log --structured --level info "SF Pro font URL is reachable. Downloading..."
     wget "$sf_pro_url"
   else
-    echo "⚠️  SF Pro main URL failed. Checking fallback URL..."
+    gum log --structured --level error "SF Pro main URL failed. Checking fallback URL..."
     fallback_status=$(wget --server-response --spider "$sf_pro_fallback" 2>&1 | awk '/HTTP\// {print $2; exit}')
     if [ "$fallback_status" -eq 200 ]; then
-        echo "✅ Fallback URL is reachable. Downloading fallback font..."
+        gum log --structured --level info "Fallback URL is reachable. Downloading fallback font..."
         wget "$sf_pro_fallback"
     else
-        echo "❌ Both main and fallback URLs are unreachable. Exiting."
+        gum log --structured --level error "Both main and fallback URLs are unreachable. Exiting."
         exit 1
     fi
   fi
@@ -203,14 +190,14 @@ install_fonts() {
 
 # ── Extract and refresh fonts ──────────────────────────
 extract_fonts() {
-  echo "🗂️  Extracting fonts to ~/.fonts..."
+  gum log --structured --level info "Extracting fonts to ~/.fonts..."
   mkdir -p ~/.fonts
   bsdtar -xf sf-pro.zip -C ~/.fonts
 
-  echo "🌀 Refreshing font cache..."
+  gum spin --spinner dot --title "Refreshing font cache..." -- sleep 2
   fc-cache -frv
 
-  echo "🧹 Cleaning up downloaded font archives..."
+  gum log --structured --level info "Cleaning up downloaded font archives..."
   rm "sf-pro.zip"
 }
 
@@ -218,8 +205,8 @@ extract_fonts() {
 main_install() {
   repo_check
   check_distro
-  aur_helper
-  install_pkgs
+  #aur_helper
+  #install_pkgs
   install
   install_fonts
   extract_fonts
@@ -232,8 +219,8 @@ subconfig_install() {
   echo "✅ All done! jomolayana..."
 }
 
-if [[ "$choice" == "3" ]]; then
+if [[ "$choice" == "Partial Installation (choose which configs to install)" ]]; then
   subconfig_install
 else
-  main
+  main_install
 fi
