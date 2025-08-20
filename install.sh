@@ -205,8 +205,8 @@ extract_fonts() {
 main_install() {
   repo_check
   check_distro
-  #aur_helper
-  #install_pkgs
+  aur_helper
+  install_pkgs
   install
   install_fonts
   extract_fonts
